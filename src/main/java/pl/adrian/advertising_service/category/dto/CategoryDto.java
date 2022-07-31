@@ -10,9 +10,11 @@ import pl.adrian.advertising_service.category.Category;
 public class CategoryDto {
     private Long id;
     private String name;
+    private Long numberOfAdvertisements;
 
     public CategoryDto(Category category) {
         this.id = category.getId();
         this.name = category.getName();
+        this.numberOfAdvertisements = 0L;
     }
 }

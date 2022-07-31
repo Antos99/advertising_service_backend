@@ -2,6 +2,7 @@ package pl.adrian.advertising_service.advertisement;
 
 import com.fasterxml.jackson.annotation.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import pl.adrian.advertising_service.address.Address;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @ToString
+@NoArgsConstructor
 @Table(name="advertisements")
 public class Advertisement {
 
@@ -40,6 +42,15 @@ public class Advertisement {
     @Transient
     private Integer duration;
 
-    public Advertisement(){}
-
+    public Advertisement(Category category, String name, Float price,
+                         String description, Integer duration) {
+        this.category = category;
+        this.name = name;
+        this.price = price;
+        this.description = description;
+        this.created = LocalDateTime.now();
+        this.active = true;
+        this.duration = duration;
+        this.expired = this.created.plusDays(this.duration);
+    }
 }

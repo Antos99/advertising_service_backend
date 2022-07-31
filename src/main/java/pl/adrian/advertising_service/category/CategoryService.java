@@ -5,9 +5,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import pl.adrian.advertising_service.advertisement.Advertisement;
 import pl.adrian.advertising_service.advertisement.AdvertisementRepository;
+import pl.adrian.advertising_service.advertisement.dto.AdvertisementDto;
+import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoMapper;
 import pl.adrian.advertising_service.category.dto.CategoryDto;
 import pl.adrian.advertising_service.category.dto.CategoryDtoMapper;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -19,11 +22,39 @@ public class CategoryService {
 
 
     public List<CategoryDto> getCategories(){
-        return CategoryDtoMapper.mapToCategoriesDtos(categoryRepository.findAll());
+        List<CategoryDto> categories = CategoryDtoMapper.mapToCategoriesDtos(categoryRepository.findAll());
+        categories.forEach(categoryDto -> categoryDto.
+                        setNumberOfAdvertisements(
+                                advertisementRepository.countAdvertisementsByCategoryId(categoryDto.getId())
+                        ));
+        return categories;
     }
 
     public CategoryDto getCategory(Long id) {
-        return CategoryDtoMapper.mapToCategoryDto(categoryRepository.findById(id).orElseThrow());
+        CategoryDto categoryDto = CategoryDtoMapper.mapToCategoryDto(categoryRepository.findById(id).orElseThrow());
+        categoryDto.setNumberOfAdvertisements(advertisementRepository.
+                countAdvertisementsByCategoryId(categoryDto.getId()));
+        return categoryDto;
     }
 
+    public CategoryDto addCategory(Category category) {
+        return CategoryDtoMapper.mapToCategoryDto(categoryRepository.save(category));
+    }
+
+    @Transactional
+    public CategoryDto editCategory(Category category) {
+        Category categoryEdited = categoryRepository.findById(category.getId()).orElseThrow();
+        categoryEdited.setName(category.getName());
+        CategoryDto categoryDto = CategoryDtoMapper.mapToCategoryDto(categoryEdited);
+        categoryDto.setNumberOfAdvertisements(advertisementRepository.
+                countAdvertisementsByCategoryId(categoryDto.getId()));
+        return categoryDto;
+    }
+
+    @Transactional
+    public void deleteCategory(Long id) {
+        List<Advertisement> advertisements = advertisementRepository.findAdvertisementsByCategoryId(id);
+        advertisements.forEach(advertisement -> advertisement.setCategory(null));
+        categoryRepository.deleteById(id);
+    }
 }

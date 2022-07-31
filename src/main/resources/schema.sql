@@ -11,9 +11,6 @@ CREATE TABLE advertisements(
     category_id BIGINT,
     price REAL,
     description TEXT,
-    voivodeship TEXT,
-    city TEXT,
-    street TEXT,
     created TIMESTAMP,
     expired TIMESTAMP,
     modified TIMESTAMP,
@@ -29,4 +26,5 @@ CREATE TABLE IF NOT EXISTS addresses(
     post_code TEXT,
     street TEXT,
     CONSTRAINT fk_advertisement FOREIGN KEY(advertisement_id) REFERENCES advertisements(id)
+--         ON delete cascade
 );

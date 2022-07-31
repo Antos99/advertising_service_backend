@@ -1,11 +1,8 @@
 package pl.adrian.advertising_service.advertisement;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.*;
 import pl.adrian.advertising_service.advertisement.dto.AdvertisementDto;
-import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoMapper;
 
 import java.util.List;
 
@@ -28,10 +25,42 @@ public class AdvertisementController {
     }
 
     @GetMapping("/advertisements/filter")
-    public List<AdvertisementDto> getAdvertisementsByFilter(@RequestParam(name="categoryId") Long id){
-        return advertisementService.getAdvertisementsByCategoryId(id);
+    public List<AdvertisementDto> getAdvertisementsByFilter(
+            @RequestParam(name="categoryId") Long categoryId,
+            @RequestParam(name="pageNumber", required=false, defaultValue="0") Integer pageNumber,
+            @RequestParam(name="pageSize", required=false, defaultValue="1") Integer pageSize,
+            @RequestParam(name="sortBy", required = false, defaultValue="id") String property,
+            @RequestParam(name="orderBy", required = false, defaultValue="DESC") Sort.Direction order
+            ){
+        Integer pageNumberResult = pageNumber > 0 ? pageNumber : 0;
+
+        Integer pageSizeResult;
+        if(pageSize < 1){
+            pageSizeResult = 1;
+        } else if(pageSize > 500){
+            pageSizeResult = 500;
+        } else{
+            pageSizeResult = pageSize;
+        }
+
+        return advertisementService.getAdvertisementsByFilter(categoryId, pageNumberResult, pageSizeResult, order,
+                property);
     }
 
+    @PostMapping("/advertisements")
+    public AdvertisementDto addAdvertisement(@RequestBody AdvertisementDto advertisementDto){
+        return advertisementService.addAdvertisement(advertisementDto);
+    }
+
+    @PutMapping("/advertisements")
+    public AdvertisementDto editAdvertisement(@RequestBody AdvertisementDto advertisementDto){
+        return advertisementService.editAdvertisement(advertisementDto);
+    }
+
+    @DeleteMapping("/advertisements/{id}")
+    public void deleteAdvertisement(@PathVariable("id") Long id){
+        advertisementService.deleteAdvertisement(id);
+    }
 
 
 }

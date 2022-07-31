@@ -9,8 +9,7 @@ import java.util.List;
 
 @Repository
 public interface AdvertisementRepository extends JpaRepository<Advertisement, Long> {
-
-//    public List<Advertisement> findAdvertisementsByCategoryIdIn(List<Long> categoryIds);
-
+    List<Advertisement> findAdvertisementsByCategoryId(Long id, Pageable pageable);
     List<Advertisement> findAdvertisementsByCategoryId(Long id);
+    Long countAdvertisementsByCategoryId(Long id);
 }
