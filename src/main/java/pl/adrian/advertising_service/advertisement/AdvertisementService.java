@@ -1,118 +1,105 @@
 package pl.adrian.advertising_service.advertisement;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import pl.adrian.advertising_service.address.Address;
-import pl.adrian.advertising_service.address.AddressRepository;
 import pl.adrian.advertising_service.address.AddressService;
 import pl.adrian.advertising_service.address.AddressVoivodeship;
-import pl.adrian.advertising_service.address.dto.AddressDto;
-import pl.adrian.advertising_service.address.dto.AddressDtoMapper;
-import pl.adrian.advertising_service.advertisement.dto.AdvertisementDto;
-import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoMapper;
-import pl.adrian.advertising_service.category.Category;
+import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoRequest;
+import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoResponse;
+import pl.adrian.advertising_service.advertisement.dto.AdvertisementMapper;
 import pl.adrian.advertising_service.category.CategoryRepository;
 
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AdvertisementService {
     private final AdvertisementRepository advertisementRepository;
     private final AddressService addressService;
-    private final AddressRepository addressRepository;
     private final CategoryRepository categoryRepository;
+    private final AdvertisementMapper advertisementMapper;
 
-    public List<AdvertisementDto> getAdvertisements(){
-        List<Advertisement> advertisements = advertisementRepository.findAll();
-        return getAdvertisementDtosWithAddress(advertisements);
+    public List<AdvertisementDtoResponse> getAdvertisements(){
+        List<Advertisement> advertisements = advertisementRepository.findAllAdvertisements();
+        return advertisementMapper.mapToAdvertisementDtoResponses(advertisements);
     }
 
-    private List<AdvertisementDto> getAdvertisementDtosWithAddress(List<Advertisement> advertisements){
-        List<AdvertisementDto> advertisementDtos = AdvertisementDtoMapper.mapAdvertisementsToDtos(advertisements);
-        List<Long> advertisementDtoIds = advertisementDtos.stream().map(AdvertisementDto::getId).toList();
-        List<AddressDto> addressDtos = addressService.getAddressesByIds(advertisementDtoIds);
 
-        addressDtos.forEach(addressDto -> setAddressDtoForAdvertisementDtos(addressDto, advertisementDtos));
-
-        return advertisementDtos;
+    public AdvertisementDtoResponse getAdvertisement(Long id) {
+        Advertisement advertisement = advertisementRepository.findAdvertisementsById(id);
+        return advertisementMapper.mapToAdvertisementDtoResponse(advertisement);
     }
 
-    private void setAddressDtoForAdvertisementDtos(AddressDto addressDto, List<AdvertisementDto> advertisementDtos) {
-        advertisementDtos.stream().
-                filter(advertisementDto -> advertisementDto.getId().equals(addressDto.getAdvertisementId())).
-                findFirst().get().setAddress(addressDto);
-    }
+    public List<AdvertisementDtoResponse> getAdvertisementsByFilter(
+            Long id, Integer pageNumber, Integer pageSize, Sort.Direction direction, String property){
 
-    public AdvertisementDto getAdvertisement(Long id) {
-        AdvertisementDto advertisementDto = AdvertisementDtoMapper.
-                mapAdvertisementToDto(advertisementRepository.findById(id).orElseThrow());
-        advertisementDto.setAddress(addressService.getAddress(advertisementDto.getId()));
-
-        return advertisementDto;
-    }
-
-    public List<AdvertisementDto> getAdvertisementsByFilter(Long id, Integer pageNumber, Integer pageSize,
-                                                            Sort.Direction direction, String property){
          List<Advertisement> advertisements = advertisementRepository.
-                 findAdvertisementsByCategoryId(id,
-                         PageRequest.of(pageNumber, pageSize, Sort.by(direction, property)));
+                 findAdvertisementsByCategoryId(id, PageRequest.of(pageNumber, pageSize, Sort.by(direction, property)));
 
-        return getAdvertisementDtosWithAddress(advertisements);
+        return advertisementMapper.mapToAdvertisementDtoResponses(advertisements);
     }
 
     @Transactional
-    public AdvertisementDto addAdvertisement(AdvertisementDto advertisementDto) {
-        if (advertisementDto.getCategoryId() == null){
+    public AdvertisementDtoResponse addAdvertisement(AdvertisementDtoRequest advertisementDtoRequest){
+        if (advertisementDtoRequest.getCategoryId() == null){
             throw new IllegalArgumentException("categoryId cannot be null");
         }
-        if (advertisementDto.getAddress() == null){
+        if (advertisementDtoRequest.getAddress() == null){
             throw new IllegalArgumentException("address cannot be null");
         }
-        Category category = categoryRepository.findById(advertisementDto.getCategoryId()).
-                orElseThrow(() -> new IllegalArgumentException("Category with id " + advertisementDto.getCategoryId()
-                + " does not exist"));
-        String name = advertisementDto.getName();
-        Float price = advertisementDto.getPrice();
-        String description = advertisementDto.getDescription();
-        Integer duration = advertisementDto.getDuration();
-        Advertisement advertisement = new Advertisement(category, name, price, description, duration);
-        advertisementRepository.save(advertisement);
 
-        AddressDto addressDto = addressService.addAddress(advertisementDto.getAddress(), advertisement);
+        Advertisement advertisement = new Advertisement(
+                categoryRepository.findById(advertisementDtoRequest.getCategoryId()).orElseThrow(),
+                advertisementDtoRequest.getName(),
+                advertisementDtoRequest.getPrice(),
+                advertisementDtoRequest.getDescription(),
+                advertisementDtoRequest.getDuration()
+        );
 
-        AdvertisementDto advertisementDtoResult = AdvertisementDtoMapper.mapAdvertisementToDto(advertisement);
-        advertisementDtoResult.setAddress(addressDto);
-        return advertisementDtoResult;
+        Address address = new Address(
+                advertisement,
+                AddressVoivodeship.getByValue(advertisementDtoRequest.getAddress().getVoivodeship()),
+                advertisementDtoRequest.getAddress().getCity(),
+                advertisementDtoRequest.getAddress().getPostCode(),
+                advertisementDtoRequest.getAddress().getStreet()
+        );
+
+        advertisement.setAddress(address);
+
+        return advertisementMapper.mapToAdvertisementDtoResponse(advertisementRepository.save(advertisement));
     }
 
     @Transactional
-    public AdvertisementDto editAdvertisement(AdvertisementDto advertisementDto) {
-        if (advertisementDto.getAddress() == null){
+    public AdvertisementDtoResponse editAdvertisement(AdvertisementDtoRequest advertisementDtoRequest) {
+        if (advertisementDtoRequest.getCategoryId() == null){
+            throw new IllegalArgumentException("categoryId cannot be null");
+        }
+        if (advertisementDtoRequest.getAddress() == null){
             throw new IllegalArgumentException("address cannot be null");
         }
-        Advertisement advertisementEdited = advertisementRepository.findById(advertisementDto.getId()).
-                orElseThrow(() -> new IllegalArgumentException("Advertisement with id " + advertisementDto.getId()
-                        + " does not exist"));
-        advertisementEdited.setCategory(categoryRepository.findById(advertisementDto.getCategoryId()).
-                orElseThrow(() -> new IllegalArgumentException("Category with id " + advertisementDto.getCategoryId()
-                        + " does not exist")));
-        advertisementEdited.setName(advertisementDto.getName());
-        advertisementEdited.setPrice(advertisementDto.getPrice());
-        advertisementEdited.setDescription(advertisementDto.getDescription());
+
+        Advertisement advertisementEdited = advertisementRepository.
+                findById(advertisementDtoRequest.getId()).orElseThrow();
+
+        advertisementEdited.setCategory(
+                categoryRepository.findById(advertisementDtoRequest.getCategoryId()).orElseThrow()
+        );
+
+        advertisementEdited.setName(advertisementDtoRequest.getName());
+        advertisementEdited.setPrice(advertisementDtoRequest.getPrice());
+        advertisementEdited.setDescription(advertisementDtoRequest.getDescription());
         advertisementEdited.setModified(LocalDateTime.now());
 
-        AddressDto addressDto = addressService.editAddress(advertisementDto.getAddress());
+        addressService.editAddress(advertisementDtoRequest.getAddress());
 
-        AdvertisementDto advertisementDtoResult = AdvertisementDtoMapper.mapAdvertisementToDto(advertisementEdited);
-        advertisementDtoResult.setAddress(addressDto);
-        return advertisementDtoResult;
+        return advertisementMapper.mapToAdvertisementDtoResponse(advertisementEdited);
     }
+
 
     public void deleteAdvertisement(Long id) {
         advertisementRepository.deleteById(id);

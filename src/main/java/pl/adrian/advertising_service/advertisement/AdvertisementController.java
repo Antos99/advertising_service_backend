@@ -2,7 +2,8 @@ package pl.adrian.advertising_service.advertisement;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
-import pl.adrian.advertising_service.advertisement.dto.AdvertisementDto;
+import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoRequest;
+import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoResponse;
 
 import java.util.List;
 
@@ -15,17 +16,17 @@ public class AdvertisementController {
     }
 
     @GetMapping("/advertisements")
-    public List<AdvertisementDto> getAdvertisements(){
+    public List<AdvertisementDtoResponse> getAdvertisements(){
         return advertisementService.getAdvertisements();
     }
 
     @GetMapping("/advertisements/{id}")
-    public AdvertisementDto getAdvertisement(@PathVariable("id") Long id){
+    public AdvertisementDtoResponse getAdvertisement(@PathVariable("id") Long id){
         return advertisementService.getAdvertisement(id);
     }
 
     @GetMapping("/advertisements/filter")
-    public List<AdvertisementDto> getAdvertisementsByFilter(
+    public List<AdvertisementDtoResponse> getAdvertisementsByFilter(
             @RequestParam(name="categoryId") Long categoryId,
             @RequestParam(name="pageNumber", required=false, defaultValue="0") Integer pageNumber,
             @RequestParam(name="pageSize", required=false, defaultValue="1") Integer pageSize,
@@ -48,19 +49,17 @@ public class AdvertisementController {
     }
 
     @PostMapping("/advertisements")
-    public AdvertisementDto addAdvertisement(@RequestBody AdvertisementDto advertisementDto){
-        return advertisementService.addAdvertisement(advertisementDto);
+    public AdvertisementDtoResponse addAdvertisement(@RequestBody AdvertisementDtoRequest advertisementDtoRequest){
+        return advertisementService.addAdvertisement(advertisementDtoRequest);
     }
 
     @PutMapping("/advertisements")
-    public AdvertisementDto editAdvertisement(@RequestBody AdvertisementDto advertisementDto){
-        return advertisementService.editAdvertisement(advertisementDto);
+    public AdvertisementDtoResponse editAdvertisement(@RequestBody AdvertisementDtoRequest advertisementDtoRequest){
+        return advertisementService.editAdvertisement(advertisementDtoRequest);
     }
 
     @DeleteMapping("/advertisements/{id}")
     public void deleteAdvertisement(@PathVariable("id") Long id){
         advertisementService.deleteAdvertisement(id);
     }
-
-
 }

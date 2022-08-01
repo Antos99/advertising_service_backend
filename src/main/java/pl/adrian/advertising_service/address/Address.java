@@ -1,11 +1,10 @@
 package pl.adrian.advertising_service.address;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import pl.adrian.advertising_service.advertisement.Advertisement;
 
 import javax.persistence.*;
@@ -19,10 +18,10 @@ import javax.persistence.*;
 public class Address {
     @Id
     private Long id;
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     @MapsId
     @JoinColumn(name="advertisement_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private Advertisement advertisement;
     @Column(name="voivodeship")
     @Enumerated(EnumType.STRING)
@@ -34,8 +33,8 @@ public class Address {
     @Column(name="street")
     private String street;
 
-    public Address(Advertisement advertisement, AddressVoivodeship voivodeship, String city, String postCode,
-                   String street) {
+    public Address(
+            Advertisement advertisement, AddressVoivodeship voivodeship, String city, String postCode, String street){
         this.advertisement = advertisement;
         this.voivodeship = voivodeship;
         this.city = city;

@@ -1,10 +1,9 @@
 package pl.adrian.advertising_service.advertisement;
 
-import com.fasterxml.jackson.annotation.*;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import pl.adrian.advertising_service.address.Address;
 import pl.adrian.advertising_service.category.Category;
 
@@ -14,7 +13,6 @@ import java.time.LocalDateTime;
 @Entity
 @Setter
 @Getter
-@ToString
 @NoArgsConstructor
 @Table(name="advertisements")
 public class Advertisement {
@@ -22,7 +20,7 @@ public class Advertisement {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="category_id")
     private Category category;
     @Column(name="name")
@@ -31,6 +29,8 @@ public class Advertisement {
     private Float price;
     @Column(name="description")
     private String description;
+    @OneToOne(mappedBy="advertisement", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
+    private Address address;
     @Column(name="created")
     private LocalDateTime created;
     @Column(name="expired")

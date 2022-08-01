@@ -1,60 +1,47 @@
 package pl.adrian.advertising_service.category;
 
-import lombok.AllArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import pl.adrian.advertising_service.advertisement.Advertisement;
 import pl.adrian.advertising_service.advertisement.AdvertisementRepository;
-import pl.adrian.advertising_service.advertisement.dto.AdvertisementDto;
-import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoMapper;
-import pl.adrian.advertising_service.category.dto.CategoryDto;
-import pl.adrian.advertising_service.category.dto.CategoryDtoMapper;
+import pl.adrian.advertising_service.category.dto.CategoryDtoResponse;
+import pl.adrian.advertising_service.category.dto.CategoryMapper;
 
 import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final AdvertisementRepository advertisementRepository;
+    private final CategoryMapper categoryMapper;
 
 
-    public List<CategoryDto> getCategories(){
-        List<CategoryDto> categories = CategoryDtoMapper.mapToCategoriesDtos(categoryRepository.findAll());
-        categories.forEach(categoryDto -> categoryDto.
-                        setNumberOfAdvertisements(
-                                advertisementRepository.countAdvertisementsByCategoryId(categoryDto.getId())
-                        ));
-        return categories;
+    public List<CategoryDtoResponse> getCategories(){
+        List<Category> categories = categoryRepository.findAll();
+        return categoryMapper.mapToCategoryDtoResponses(categories);
     }
 
-    public CategoryDto getCategory(Long id) {
-        CategoryDto categoryDto = CategoryDtoMapper.mapToCategoryDto(categoryRepository.findById(id).orElseThrow());
-        categoryDto.setNumberOfAdvertisements(advertisementRepository.
-                countAdvertisementsByCategoryId(categoryDto.getId()));
-        return categoryDto;
+    public CategoryDtoResponse getCategory(Long id) {
+        Category category = categoryRepository.findById(id).orElseThrow();
+        return categoryMapper.mapToCategoryDtoResponse(category);
     }
 
-    public CategoryDto addCategory(Category category) {
-        return CategoryDtoMapper.mapToCategoryDto(categoryRepository.save(category));
+    public CategoryDtoResponse addCategory(Category category) {
+        return categoryMapper.mapToCategoryDtoResponse(categoryRepository.save(category));
     }
 
     @Transactional
-    public CategoryDto editCategory(Category category) {
+    public CategoryDtoResponse editCategory(Category category) {
         Category categoryEdited = categoryRepository.findById(category.getId()).orElseThrow();
         categoryEdited.setName(category.getName());
-        CategoryDto categoryDto = CategoryDtoMapper.mapToCategoryDto(categoryEdited);
-        categoryDto.setNumberOfAdvertisements(advertisementRepository.
-                countAdvertisementsByCategoryId(categoryDto.getId()));
-        return categoryDto;
+        return categoryMapper.mapToCategoryDtoResponse(categoryEdited);
     }
 
     @Transactional
     public void deleteCategory(Long id) {
-        List<Advertisement> advertisements = advertisementRepository.findAdvertisementsByCategoryId(id);
-        advertisements.forEach(advertisement -> advertisement.setCategory(null));
+        advertisementRepository.setNullForAdvertisementsCategoryIdByCategoryId(id);
         categoryRepository.deleteById(id);
     }
 }

@@ -1,13 +1,8 @@
 package pl.adrian.advertising_service.category;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import net.bytebuddy.implementation.bind.MethodDelegationBinder;
 import pl.adrian.advertising_service.advertisement.Advertisement;
 
 import javax.persistence.*;
@@ -24,10 +19,8 @@ public class Category {
     private Long id;
     @Column(name="name")
     private String name;
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    private List<Advertisement> advertisements;
 
     public Category(){}
-
-    public Category(String name) {
-        this.name = name;
-    }
 }
