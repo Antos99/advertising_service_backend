@@ -1,4 +1,4 @@
-# Advertising service (backend)
+# Advertising service - backend (in progress)
 A web application that allows adding and viewing advertisements as well, as user registration and login. Project implements the backend part of the application
 ### Technologies:
 - Java
