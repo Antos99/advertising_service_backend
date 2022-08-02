@@ -1,11 +1,9 @@
-DROP TABLE IF EXISTS categories, advertisements CASCADE;
-
-CREATE TABLE categories(
+CREATE TABLE IF NOT EXISTS categories(
     id BIGSERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );
 
-CREATE TABLE advertisements(
+CREATE TABLE IF NOT EXISTS advertisements(
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     category_id BIGINT,
@@ -26,5 +24,18 @@ CREATE TABLE IF NOT EXISTS addresses(
     post_code TEXT,
     street TEXT,
     CONSTRAINT fk_advertisement FOREIGN KEY(advertisement_id) REFERENCES advertisements(id)
---         ON delete cascade
+);
+
+CREATE TABLE users
+(
+    username VARCHAR(50)  NOT NULL PRIMARY KEY,
+    password VARCHAR(100) NOT NULL,
+    enabled  BOOLEAN NOT NULL DEFAULT true
+);
+
+CREATE TABLE authorities
+(
+    username  VARCHAR(50) NOT NULL,
+    authority VARCHAR(50) NOT NULL,
+    FOREIGN KEY (username) REFERENCES users (username)
 );
