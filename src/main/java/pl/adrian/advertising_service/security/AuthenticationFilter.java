@@ -1,4 +1,4 @@
-package pl.adrian.advertising_service.authentication;
+package pl.adrian.advertising_service.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +6,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import pl.adrian.advertising_service.authentication.dto.AuthenticationDtoLogin;
+import pl.adrian.advertising_service.security.dto.AuthenticationDtoLogin;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

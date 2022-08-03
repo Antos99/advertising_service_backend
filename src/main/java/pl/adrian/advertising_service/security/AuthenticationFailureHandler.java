@@ -1,4 +1,4 @@
-package pl.adrian.advertising_service.authentication;
+package pl.adrian.advertising_service.security;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;

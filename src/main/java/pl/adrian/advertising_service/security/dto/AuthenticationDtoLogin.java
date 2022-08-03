@@ -1,4 +1,4 @@
-package pl.adrian.advertising_service.authentication.dto;
+package pl.adrian.advertising_service.security.dto;
 
 import lombok.Getter;
 

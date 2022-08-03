@@ -1,6 +1,8 @@
 package pl.adrian.advertising_service.advertisement;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoRequest;
 import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoResponse;
