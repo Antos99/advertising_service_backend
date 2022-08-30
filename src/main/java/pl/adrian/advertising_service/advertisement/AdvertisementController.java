@@ -1,8 +1,7 @@
 package pl.adrian.advertising_service.advertisement;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoRequest;
 import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoResponse;
@@ -10,12 +9,9 @@ import pl.adrian.advertising_service.advertisement.dto.AdvertisementDtoResponse;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 public class AdvertisementController {
-    AdvertisementService advertisementService;
-
-    public AdvertisementController(AdvertisementService advertisementService) {
-        this.advertisementService = advertisementService;
-    }
+    private final AdvertisementService advertisementService;
 
     @GetMapping("/advertisements")
     public List<AdvertisementDtoResponse> getAdvertisements(){

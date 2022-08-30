@@ -6,8 +6,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import pl.adrian.advertising_service.user.UserService;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -19,14 +19,14 @@ public class AuthenticationJwtFilter extends BasicAuthenticationFilter {
 
     private static final String TOKEN_HEADER = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer ";
-    private final UserDetailsService userDetailsService;
+    private final UserService userService;
     private final String secret;
 
     public AuthenticationJwtFilter(AuthenticationManager authenticationManager,
-                                   UserDetailsService userDetailsService,
+                                   UserService userService,
                                    String secret) {
         super(authenticationManager);
-        this.userDetailsService = userDetailsService;
+        this.userService = userService;
         this.secret = secret;
     }
 
@@ -50,7 +50,7 @@ public class AuthenticationJwtFilter extends BasicAuthenticationFilter {
                     .verify(token.replace(TOKEN_PREFIX, ""))
                     .getSubject();
             if(username != null){
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UserDetails userDetails = userService.loadUserByUsername(username);
                 return new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null,
                         userDetails.getAuthorities());
             }
