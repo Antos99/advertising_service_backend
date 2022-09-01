@@ -4,17 +4,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import pl.adrian.advertising_service.role.Role;
 import pl.adrian.advertising_service.role.RoleRepository;
 import pl.adrian.advertising_service.role.RoleService;
 import pl.adrian.advertising_service.user.UserService;
 import pl.adrian.advertising_service.user.dto.UserDtoRequest;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @SpringBootApplication

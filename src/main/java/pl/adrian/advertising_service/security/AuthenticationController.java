@@ -8,7 +8,7 @@ import pl.adrian.advertising_service.security.dto.AuthenticationDtoLogin;
 @RestController
 public class AuthenticationController {
 
-    @PostMapping("/login")
-    public void login(@RequestBody AuthenticationDtoLogin authenticationDtoLogin){
-    }
+//    @PostMapping("/login")
+//    public void login(@RequestBody AuthenticationDtoLogin authenticationDtoLogin){
+//    }
 }

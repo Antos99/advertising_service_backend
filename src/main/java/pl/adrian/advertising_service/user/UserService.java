@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import pl.adrian.advertising_service.role.Role;
 import pl.adrian.advertising_service.role.RoleRepository;
 import pl.adrian.advertising_service.user.dto.UserDtoRequest;
+import pl.adrian.advertising_service.user.dto.UserDtoResponse;
+import pl.adrian.advertising_service.user.dto.UserMapper;
 
 import javax.transaction.Transactional;
 import java.util.*;
@@ -19,6 +21,7 @@ import java.util.*;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -32,7 +35,7 @@ public class UserService implements UserDetailsService {
                 user.getUsername(), user.getPassword(), authorities);
     }
 
-    public User addUser(UserDtoRequest userDtoRequest){
+    public UserDtoResponse addUser(UserDtoRequest userDtoRequest){
         if (userDtoRequest.getUsername() == null){
             throw new IllegalArgumentException("username cannot be null");
         }
@@ -60,31 +63,91 @@ public class UserService implements UserDetailsService {
                 userDtoRequest.getEmail(),
                 userRoles
         );
-        return userRepository.save(user);
+        return userMapper.mapToUserDtoResponse(userRepository.save(user));
     }
 
-    public User getUser(String username){
-        return userRepository.findUserByUsername(username);
+    public UserDtoResponse getUser(String username){
+        User user = userRepository.findUserByUsername(username);
+        if (user == null){
+            throw new IllegalArgumentException("User with username: " + username + " does not exist");
+        }
+        return userMapper.mapToUserDtoResponse(user);
     }
 
-    public List<User> getUsers(){
-        return userRepository.findAll();
+    public List<UserDtoResponse> getUsers(){
+        return userMapper.mapToUserDtoResponses(userRepository.findAll());
     }
 
     @Transactional
-    public User editUser(UserDtoRequest userDtoRequest){
-        if (userDtoRequest.getEmail() == null){
-            throw new IllegalArgumentException("email cannot be null");
+    public UserDtoResponse editUserUsername(String username, String newUsername) {
+        User user = userRepository.findUserByUsername(username);
+        if (user == null){
+            throw new IllegalArgumentException("User with username: " + username + " does not exist");
         }
-        if (userDtoRequest.getRoles() == null){
-            throw new IllegalArgumentException("roles cannot be null");
+        if(userRepository.findUserByUsername(newUsername) != null){
+            throw new IllegalArgumentException("Username: " + newUsername + " is already taken");
         }
 
-        User userEdited = userRepository.findById(userDtoRequest.getId()).orElseThrow();
+        user.setUsername(newUsername);
+        return userMapper.mapToUserDtoResponse(user);
+    }
 
-        userEdited.setEmail(userDtoRequest.getEmail());
-        userEdited.setRoles(userDtoRequest.getRoles());
+    @Transactional
+    public UserDtoResponse editUserEmail(String username, String newEmail) {
+        User user = userRepository.findUserByUsername(username);
+        if (user == null){
+            throw new IllegalArgumentException("User with username: " + username + " does not exist");
+        }
+        if (userRepository.findUserByEmail(newEmail) != null){
+            throw new IllegalArgumentException("Email: " + newEmail + " is already taken");
+        }
+        user.setEmail(newEmail);
+        return userMapper.mapToUserDtoResponse(user);
+    }
 
-        return userEdited;
+    @Transactional
+    public UserDtoResponse editUserPassword(String username, String newPassword) {
+        User user = userRepository.findUserByUsername(username);
+        if (user == null){
+            throw new IllegalArgumentException("User with username: " + username + " does not exist");
+        }
+        if (newPassword == null){
+            throw new IllegalArgumentException("password cannot be null");
+        }
+        user.setPassword(new BCryptPasswordEncoder().encode(newPassword));
+        return userMapper.mapToUserDtoResponse(user);
+    }
+
+    @Transactional
+    public UserDtoResponse editUserEnabled(String username, Boolean newEnabled) {
+        User user = userRepository.findUserByUsername(username);
+        if (user == null){
+            throw new IllegalArgumentException("User with username: " + username + " does not exist");
+        }
+        user.setEnabled(newEnabled);
+        return userMapper.mapToUserDtoResponse(user);
+    }
+
+    @Transactional
+    public UserDtoResponse editUserRoles(String username, List<Role> newRoles) {
+        User user = userRepository.findUserByUsername(username);
+        if (user == null){
+            throw new IllegalArgumentException("User with username: " + username + " does not exist");
+        }
+        Set<Role> newUserRoles = new HashSet<>();
+        for(Role r : newRoles){
+            Role roleToCheck = roleRepository.findRoleByName(r.getName());
+            if(roleToCheck == null){
+                throw new IllegalArgumentException("incorrect role name: " + r.getName());
+            }else{
+                newUserRoles.add(roleToCheck);
+            }
+        }
+        user.setRoles(newUserRoles);
+        return userMapper.mapToUserDtoResponse(user);
+    }
+
+    public void deleteUser(String username) {
+        userRepository.deleteUserByUsername(username);
     }
 }

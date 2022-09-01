@@ -55,8 +55,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/categories/*").hasAuthority("ROLE_ADMIN")
                 .antMatchers(HttpMethod.GET, "/addresses**").permitAll()
                 .antMatchers(HttpMethod.POST, "/login").permitAll()
-                .antMatchers(HttpMethod.GET, "/users**").hasAnyAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.POST, "/users").hasAnyAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.GET, "/users").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.GET, "/users/*").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.POST, "/users").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.PUT, "/users/**").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/users/*").hasAnyAuthority("ROLE_ADMIN")
                 .antMatchers(HttpMethod.GET, "/roles**").hasAnyAuthority("ROLE_ADMIN")
                 .antMatchers(HttpMethod.POST, "/roles").hasAnyAuthority("ROLE_ADMIN");
         http.exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));

@@ -11,20 +11,11 @@ import java.util.Set;
 
 @Setter
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class UserDtoRequest {
-    private Long id;
     private String username;
     private String password;
-    private Boolean enabled;
     private String email;
     private Set<Role> roles;
-
-    public UserDtoRequest(String username, String password, String email, Set<Role> roles) {
-        this.username = username;
-        this.password = password;
-        this.enabled = true;
-        this.email = email;
-        this.roles = roles;
-    }
 }

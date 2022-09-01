@@ -1,14 +1,10 @@
 package pl.adrian.advertising_service.role;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import pl.adrian.advertising_service.user.User;
 
 import javax.persistence.*;
-import java.util.Set;
 
 @Entity
 @Setter
@@ -22,9 +18,6 @@ public class Role {
     private Long id;
     @Column(name="name")
     private String name;
-    @ManyToMany(fetch=FetchType.LAZY, mappedBy="roles")
-    @JsonIgnore
-    private Set<User> users;
 
     public Role(String name) {
         this.name = name;

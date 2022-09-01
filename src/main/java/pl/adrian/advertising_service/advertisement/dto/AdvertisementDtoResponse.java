@@ -2,7 +2,6 @@ package pl.adrian.advertising_service.advertisement.dto;
 
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pl.adrian.advertising_service.address.dto.AddressDto;
 import pl.adrian.advertising_service.advertisement.Advertisement;
@@ -12,7 +11,6 @@ import java.time.LocalDateTime;
 
 @Setter
 @Getter
-@NoArgsConstructor
 public class AdvertisementDtoResponse {
     private Long id;
     private String categoryName;
