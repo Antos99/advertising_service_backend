@@ -1,78 +1,87 @@
 package pl.adrian.advertising_service.security;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import pl.adrian.advertising_service.user.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+    private final CustomUserDetailsService customUserDetailsService;
+    private final AuthenticationFailureHandler authenticationFailureHandler;
+    private final AuthenticationJwtFilter authenticationJwtFilter;
+    private final FilterChainExceptionHandler filterChainExceptionHandler;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    @Value("${api.prefix}")
+    private String apiPrefix;
 
-    private final ObjectMapper objectMapper;
-    private final AuthenticationSuccessHandler successHandler;
-    private final AuthenticationFailureHandler failureHandler;
-    private final String secret;
-    private final UserService userService;
-
-    public SecurityConfig(ObjectMapper objectMapper, AuthenticationSuccessHandler successHandler,
-                          AuthenticationFailureHandler failureHandler, @Value("${jwt.secret}") String secret,
-                          UserService userService) {
-        this.objectMapper = objectMapper;
-        this.successHandler = successHandler;
-        this.failureHandler = failureHandler;
-        this.secret = secret;
-        this.userService = userService;
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception{
-        auth.userDetailsService(userService).passwordEncoder(new BCryptPasswordEncoder());
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        final DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(customUserDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        return authenticationProvider;
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/advertisements**").permitAll()
-                .antMatchers(HttpMethod.POST, "/advertisements").hasAuthority("ROLE_USER")
-                .antMatchers(HttpMethod.PUT, "/advertisements").hasAuthority("ROLE_USER")
-                .antMatchers(HttpMethod.DELETE, "/advertisements/*").hasAuthority("ROLE_USER")
-                .antMatchers(HttpMethod.GET, "/categories**").permitAll()
-                .antMatchers(HttpMethod.POST, "/categories").hasAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.PUT, "/categories").hasAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.DELETE, "/categories/*").hasAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.GET, "/addresses**").permitAll()
-                .antMatchers(HttpMethod.POST, "/login").permitAll()
-                .antMatchers(HttpMethod.GET, "/users").hasAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.GET, "/users/*").hasAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.POST, "/users").hasAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.PUT, "/users/**").hasAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.DELETE, "/users/*").hasAnyAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.GET, "/roles**").hasAnyAuthority("ROLE_ADMIN")
-                .antMatchers(HttpMethod.POST, "/roles").hasAnyAuthority("ROLE_ADMIN");
-        http.exceptionHandling().authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
-        http.addFilter(authenticationFilter())
-                .addFilter(new AuthenticationJwtFilter(authenticationManager(), userService, secret));
-    }
+        http
+                .authorizeRequests()
+                .antMatchers(HttpMethod.GET, apiPrefix+"/advertisements/**").permitAll()
+                .antMatchers(HttpMethod.POST, apiPrefix+"/advertisements").hasAuthority("ROLE_USER")
+                .antMatchers(HttpMethod.PUT, apiPrefix+"/advertisements/*").hasAuthority("ROLE_USER")
+                .antMatchers(HttpMethod.DELETE, apiPrefix+"/advertisements/*").hasAuthority("ROLE_USER")
+                .antMatchers(HttpMethod.GET, apiPrefix+"/categories/**").permitAll()
+                .antMatchers(HttpMethod.POST, apiPrefix+"/categories").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.PUT, apiPrefix+"/categories/*").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.DELETE, apiPrefix+"/categories/*").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.GET, apiPrefix+"/addresses/**").permitAll()
+                .antMatchers(HttpMethod.POST, apiPrefix+"/login").permitAll()
+                .antMatchers(HttpMethod.POST, apiPrefix+"/register").permitAll()
+                .antMatchers(HttpMethod.GET, apiPrefix+"/users").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.GET, apiPrefix+"/users/*").permitAll()
+                .antMatchers(HttpMethod.POST, apiPrefix+"/users").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.PUT, apiPrefix+"/users/**").hasAuthority("ROLE_USER")
+                .antMatchers(HttpMethod.PUT, apiPrefix+"/users/*/edit/roles").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.PUT, apiPrefix+"/users/*/edit/enabled").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.DELETE, apiPrefix+"/users/*").hasAuthority("ROLE_USER")
+                .antMatchers(HttpMethod.GET, apiPrefix+"/roles").hasAuthority("ROLE_ADMIN")
+                .anyRequest().permitAll();
+        http.authenticationProvider(authenticationProvider());
+        http.addFilterBefore(authenticationJwtFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(filterChainExceptionHandler, AuthenticationJwtFilter.class);
+        http.exceptionHandling()
+                .accessDeniedHandler(customAccessDeniedHandler)
+                .authenticationEntryPoint(authenticationFailureHandler);
 
-    public AuthenticationFilter authenticationFilter() throws Exception{
-        AuthenticationFilter authenticationFilter = new AuthenticationFilter(objectMapper);
-        authenticationFilter.setAuthenticationSuccessHandler(successHandler);
-        authenticationFilter.setAuthenticationFailureHandler(failureHandler);
-        authenticationFilter.setAuthenticationManager(super.authenticationManager());
-        return authenticationFilter;
+        return http.build();
     }
-
 }

@@ -1,11 +1,9 @@
 package pl.adrian.advertising_service.advertisement;
 
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import pl.adrian.advertising_service.address.Address;
 import pl.adrian.advertising_service.category.Category;
+import pl.adrian.advertising_service.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -14,15 +12,20 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name="advertisements")
+@ToString
 public class Advertisement {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name="category_id")
+    @JoinColumn(name="category_name", referencedColumnName="name")
     private Category category;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="username", referencedColumnName="username")
+    private User user;
     @Column(name="name")
     private String name;
     @Column(name="price")
@@ -42,9 +45,10 @@ public class Advertisement {
     @Transient
     private Integer duration;
 
-    public Advertisement(Category category, String name, Float price,
+    public Advertisement(Category category, User user, String name, Float price,
                          String description, Integer duration) {
         this.category = category;
+        this.user = user;
         this.name = name;
         this.price = price;
         this.description = description;

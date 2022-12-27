@@ -20,7 +20,7 @@ public class CategoryMapper {
     public CategoryDtoResponse mapToCategoryDtoResponse(Category category) {
         CategoryDtoResponse categoryDtoResponse = new CategoryDtoResponse(category);
         categoryDtoResponse.setNumberOfAdvertisements(
-                advertisementRepository.countAdvertisementsByCategoryId(categoryDtoResponse.getId())
+                advertisementRepository.countAdvertisementsByCategoryName(categoryDtoResponse.getName())
         );
         return categoryDtoResponse;
     }

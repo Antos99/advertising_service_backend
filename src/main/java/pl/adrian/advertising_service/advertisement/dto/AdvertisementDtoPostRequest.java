@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pl.adrian.advertising_service.address.dto.AddressDtoRequest;
-import pl.adrian.advertising_service.address.dto.AddressDtoResponse;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
@@ -14,7 +13,7 @@ import javax.validation.constraints.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdvertisementDtoRequest {
+public class AdvertisementDtoPostRequest {
     @NotNull(message = "Category name cannot be null")
     private String categoryName;
     @NotNull(message = "Name cannot be null")

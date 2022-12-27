@@ -3,17 +3,24 @@ package pl.adrian.advertising_service.user;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import pl.adrian.advertising_service.advertisement.Advertisement;
 import pl.adrian.advertising_service.role.Role;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Set;
 
 @Entity
 @Setter
 @Getter
 @NoArgsConstructor
-@Table(name="users")
-public class User {
+@Table(
+        name="users",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"username", "email"})
+        }
+)
+public class User implements Serializable{
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
@@ -25,6 +32,8 @@ public class User {
     private String password;
     @Column(name="enabled")
     private Boolean enabled;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<Advertisement> advertisements;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name="users_roles",
@@ -38,6 +47,15 @@ public class User {
         this.password = password;
         this.email = email;
         this.enabled = true;
+        this.roles = roles;
+    }
+
+    public User(Long id, String username, String email, String password, Boolean enabled, Set<Role> roles) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.enabled = enabled;
         this.roles = roles;
     }
 }

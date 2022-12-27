@@ -1,24 +1,22 @@
 package pl.adrian.advertising_service.address;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import pl.adrian.advertising_service.advertisement.Advertisement;
 
 import javax.persistence.*;
 
 @Entity
-@ToString
+@ToString(exclude = "advertisement")
 @Setter
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name="addresses")
 public class Address {
     @Id
     private Long id;
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
     @MapsId
     @JoinColumn(name="advertisement_id")

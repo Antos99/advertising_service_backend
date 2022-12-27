@@ -1,9 +1,15 @@
-# Advertising service - backend (in progress)
-A web application that allows adding and viewing advertisements as well, as user registration and login. Project implements the backend part of the application. 
-Frontend part will be added in the future
+# Advertising service
+A web application that allows adding and viewing advertisements as well, as user registration and login.
 ### Technologies:
 - Java
-- Spring Web
-- Spring Data JPA
-- Spring Security
-- PostgreSQL
+- Spring Boot (JPA, WEB, Security)
+- MySQL
+- JUnit5
+### Requirements to run application:
+- run MySQL service on localhost:3306
+- specify user in MySQL with credential:
+    - username: root
+    - password: zaq1@WSX
+- create database "advertising_service"
+
+Endpoints are available at the link: http://localhost:8080/swagger-ui/index.html (during using swagger disable adblock in your web browser)
